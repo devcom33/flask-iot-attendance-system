@@ -97,7 +97,7 @@ def set_data():
             print("Inserted document ID:", inserted_id)
             print("RFID Tag Data:", tag_data)
 
-            return redirect(url_for('attendance'))
+            return render_template('set_data.html')
         else:
             return f"Error recording attendance: {insert_response.status_code}, {insert_response.text}"
 

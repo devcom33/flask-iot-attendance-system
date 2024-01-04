@@ -1,41 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Data</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <h1>Employee Attendance</h1>
+{% extends "base.html" %}
 
+{% block title %}Attendance - App{% endblock %}
+
+{% block content %}
+<div class="pagetitle">
+    <h1>Data Tables</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+        <li class="breadcrumb-item active">Attendance</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+    <div class="card">
+        <div class="card-body">
     <!-- Display attendance data as a table -->
-    <div class="container">
-        <h2>Attendance</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>TAG ID</th>
-                    <th>Name</th>
-                    <th>Employee ID</th>
-                    <th>Timestamp</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in data %}
-                    <tr>
-                        <td>{{ record.tag_data }}</td>
-                        <td>{{ record.user_name }}</td>
-                        <td>{{ record.employee_id }}</td>
-                        <td>{{ record.attendance_time }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    
- 
-
-</body>
-</html>
+            <div class="container">
+                <h5  class="card-title">Attendance</h5>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>TAG ID</th>
+                            <th>Name</th>
+                            <th>Employee ID</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in data %}
+                            <tr>
+                                <td>{{ record.tag_data }}</td>
+                                <td>{{ record.user_name }}</td>
+                                <td>{{ record.employee_id }}</td>
+                                <td>{{ record.attendance_time }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        </div>
+{% endblock %}
