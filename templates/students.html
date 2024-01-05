@@ -24,6 +24,7 @@
                             <th>Name</th>
                             <th>Employee ID</th>
                             <th>Timestamp</th>
+                            <th>Actions</th> <!-- Add a new column for actions -->
                         </tr>
                     </thead>
                     <tbody>
@@ -33,10 +34,27 @@
                                 <td>{{ record.user_name }}</td>
                                 <td>{{ record.employee_id }}</td>
                                 <td>{{ record.attendance_time }}</td>
+                                <td>
+                                    <!-- View Button -->
+                                    <a href="#" class="btn btn-info btn-sm">
+                                        View
+                                    </a>
+                                    
+                                    <!-- Edit Button -->
+                                    <a href="#" class="btn btn-warning btn-sm">
+                                        Edit
+                                    </a>
+                                    
+                                    <!-- Delete Button -->
+                                    <a href="#" class="btn btn-danger btn-sm">
+                                        Delete
+                                    </a>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                
             </div>
         </div>
         </div>

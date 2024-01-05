@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Attend - Your App{% endblock %}
+
+{% block content %}
+<section class="section">
+        <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">Vertical Form</h5>
+
+              <!-- Vertical Form -->
+              <form  method="POST" action="#">
+                <div class="col-12">
+                  <label for="employee_id" class="form-label">Student Tag:</label>
+                  <input type="text" class="form-control" id="employee_id" name="employee_id" required>
+                </div>
+                <div class="text-center">
+                  <button type="submit" class="btn btn-primary">Attend</button>
+                </div>
+              </form><!-- Vertical Form -->
+
+            </div>
+          </div>
+        </section>
+    {% endblock %}
