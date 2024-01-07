@@ -1,13 +1,17 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request,current_app
 from datetime import datetime
 import requests
 
 set_data_bp = Blueprint('set_data', __name__)
 @set_data_bp.route('/set-data', methods=['GET', 'POST'])
 def set_data():
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    collection_name = current_app.config['COLLECTION_NAME']
+    headers = current_app.config['HEADERS']
     if request.method == 'POST':
         # Process the form data and store it in MongoDB Atlas
-        employee_id = request.form.get('employee_id')
+        student_id = request.form.get('student_id')
         name = request.form.get('name')
         # Add more fields as needed
 
@@ -25,7 +29,7 @@ def set_data():
             "document": {
                 "tag_data": tag_data,
                 "user_name": name,
-                "employee_id": employee_id,
+                "student_id": student_id,
                 "attendance_time": current_time,
             }
         }

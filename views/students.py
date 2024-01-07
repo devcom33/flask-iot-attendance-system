@@ -25,7 +25,10 @@ def display_students():
     else:
         return f"Error fetching attendance data. Status code: {response.status_code}"
 
-def update_student():
+
+@students_bp.route('/students/edit/<string:student_id>',methods=['GET', 'POST'])
+def update_student(student_id):
     pass
+@students_bp.route('/students/delete/<string:student_id>',methods=['GET'])
 def delete_student():
     pass

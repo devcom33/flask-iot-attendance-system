@@ -9,7 +9,7 @@ def dashboard():
     database_name = current_app.config['DATABASE_NAME']
     collection_name = current_app.config['COLLECTION_NAME']
     headers = current_app.config['HEADERS']
-    response = requests.post(
+    students_response = requests.post(
         f"{ATLAS_API_URL}/action/aggregate",
         headers=headers,
         json={
@@ -19,10 +19,20 @@ def dashboard():
             "pipeline":[{ "$group": {"_id": None, "totalCount": { "$sum": 1 }}}]
         }
     )
-    if response.status_code == 200:
-        count_students = response.json()
-        count_students = count_students['documents'][0]['totalCount']
-        return render_template('dashboard.html', cnt=count_students)
+    attendance_response = requests.post(
+        f"{ATLAS_API_URL}/action/aggregate",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "pipeline":[{ "$group": {"_id": None, "totalCount": { "$sum": 1 }}}]
+        }
+    )
+    if students_response.status_code == 200 and attendance_response.status_code == 200:
+        count_students = students_response.json()['documents'][0]['totalCount'] if students_response.json()['documents'] else 0
+        count_present_students = attendance_response.json()['documents'][0]['totalCount'] if attendance_response.json()['documents'] else 0
+        return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students)
     else:
         print(f"Error fetching attendance data. Status code: {response.status_code}")
     return render_template('dashboard.html')

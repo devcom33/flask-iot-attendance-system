@@ -1,0 +1,11 @@
+.btn-primary {
+    background-color: #176B87; /* Set your desired primary button background color */
+    border-color: #176B87; /* Set your desired primary button border color */
+    color: #fff; /* Set your desired text color for the primary button */
+}
+
+.btn-primary:hover {
+    background-color: #14637e; /* Set your desired primary button background color on hover */
+    border-color: #14637e; /* Set your desired primary button border color on hover */
+    color: #fff; /* Set your desired text color for the primary button on hover */
+}

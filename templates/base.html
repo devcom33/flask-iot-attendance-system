@@ -27,6 +27,7 @@
   <link href="{{ url_for('static', filename='assets/vendor/simple-datatables/style.css') }}" rel="stylesheet">
   <!-- Template Main CSS File -->
   <link href="{{ url_for('static', filename='assets/css/style.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='assets/css/custom.css') }}" rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
@@ -36,7 +37,7 @@
   <header id="header" class="header fixed-top d-flex align-items-center">
 
     <div class="d-flex align-items-center justify-content-between">
-      <a href="index.html" class="logo d-flex align-items-center">
+      <a href="{{url_for('dashboard.dashboard')}}" class="logo d-flex align-items-center">
         <!-- <img src="{{ url_for('static', filename='assets/img/logo.png')}}" alt=""> -->
         <span class="d-none d-lg-block">Attendance</span>
       </a>
@@ -183,7 +184,7 @@
     <ul class="sidebar-nav" id="sidebar-nav">
 
       <li class="nav-item">
-        <a class="nav-link " href="url_for('dashboard.dashboard')">
+        <a class="nav-link " href="{{url_for('dashboard.dashboard')}}">
           <i class="bi bi-grid"></i>
           <span>Dashboard</span>
         </a>
@@ -195,8 +196,8 @@
         </a>
         <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
           <li>
-            <a href="#">
-              <i class="bi bi-circle"></i><span>Alerts</span>
+            <a href="/attend">
+              <i class="bi bi-circle"></i><span>Set Attend</span>
             </a>
           </li>
 
