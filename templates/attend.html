@@ -4,21 +4,35 @@
 
 {% block content %}
 <section class="section">
-        <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">Set Attend</h5>
+  <div class="pagetitle">
+    <h1>Set Attend</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
+        <li class="breadcrumb-item active">Set Attend</li>
+      </ol>
+    </nav>
+  </div><!-- End Page Title -->
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Scan Your Card</h5>
+      
+      <div class="text-center mb-4">
+        <img src="{{ url_for('static', filename='assets/img/scan.png')}}" class="img-fluid" width="25%" height="25%" alt="RFID Scan Image">
+      </div>
+      
+      <form method="POST" action="#">
+        <div class="mb-3">
+          <label for="tag_data" class="form-label">Student Tag:</label>
+          <input type="text" class="form-control" id="tag_data" name="tag_data" required>
+        </div>
 
-              <form  method="POST" action="#">
-                <div class="col-12">
-                  <label for="tag_data" class="form-label">Student Tag:</label>
-                  <input type="text" class="form-control" id="tag_data" name="tag_data" required>
-                </div>
-                <div class="text-center">
-                  <button type="submit" class="btn btn-primary">Attend</button>
-                </div>
-              </form><!-- Vertical Form -->
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">Attend</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
 
-            </div>
-          </div>
-        </section>
     {% endblock %}

@@ -36,7 +36,7 @@
                                 <td>{{ record.attendance_time }}</td>
                                 <td>
                                     <!-- View Button -->
-                                    <a href="#" class="btn btn-info btn-sm">
+                                    <a href="http://127.0.0.1:5000/students/view/{{ record.student_id }}" class="btn btn-info btn-sm">
                                         View
                                     </a>
                                     
@@ -46,7 +46,7 @@
                                     </a>
                                     
                                     <!-- Delete Button -->
-                                    <a href="#" class="btn btn-danger btn-sm">
+                                    <a href="http://127.0.0.1:5000/students/delete/{{ record.student_id }}" class="btn btn-danger btn-sm">
                                         Delete
                                     </a>
                                 </td>

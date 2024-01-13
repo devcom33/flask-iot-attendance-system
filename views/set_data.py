@@ -10,14 +10,14 @@ def set_data():
         database_name = current_app.config['DATABASE_NAME']
         collection_name = current_app.config['COLLECTION_NAME']
         headers = current_app.config['HEADERS']
-        if request.method == 'POST':
+        if request.method == 'POST' and request.form.get('student_id') and request.form.get('name'):
             # Process the form data and store it in MongoDB Atlas
             student_id = request.form.get('student_id')
             name = request.form.get('name')
             # Add more fields as needed
 
             # Simulate RFID tag data
-            tag_data = "987654321"
+            tag_data = "672276220"
 
             # Get the current date and time
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

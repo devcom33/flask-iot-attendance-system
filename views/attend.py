@@ -10,7 +10,7 @@ def attend():
         database_name = current_app.config['DATABASE_NAME']
         collection_name = current_app.config['COLLECTION_NAME']
         headers = current_app.config['HEADERS']
-        if request.method == 'POST':
+        if request.method == 'POST' and request.form.get('tag_data'):
             # Process the form data and store it in MongoDB Atlas
             tag_id = request.form.get('tag_data')
             # Get the current date and time
