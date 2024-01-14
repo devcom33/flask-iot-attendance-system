@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, current_app
+from flask import Flask, render_template, request, redirect, url_for, session, Blueprint, current_app,flash
 from flask_pymongo import PyMongo
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -16,6 +16,8 @@ def login():
         if user and check_password_hash(user['password'], password):
             session['username'] = username
             return redirect(url_for('dashboard.dashboard'))
+        else:
+            flash('Invalid username or password', 'error')
 
     return render_template('login.html')
 

@@ -17,13 +17,16 @@ def set_data():
             student_id = request.form.get('student_id')
             name = request.form.get('name')
             student_image = request.files['student_image']
+            # Simulate RFID tag data
+            tag_id = request.form.get('tag_id')
+            if not student_image or not allowed_file(student_image.filename):
+                filename="student_avatar.png"
             if student_image and allowed_file(student_image.filename):
                 filename = secure_filename(student_image.filename)
                 image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                 student_image.save(image_path)
 
-            # Simulate RFID tag data
-            tag_id = "672276220"
+
 
             # Get the current date and time
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

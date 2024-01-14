@@ -17,6 +17,15 @@
     <!-- Display attendance data as a table -->
             <div class="container">
                 <h5  class="card-title">Students</h5>
+                {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-success" role="alert">
+                    {% for message in messages %}
+                        {{ message }}
+                    {% endfor %}
+                    </div>
+                {% endif %}
+                {% endwith %}
                 <table class="table">
                     <thead>
                         <tr>
@@ -41,7 +50,7 @@
                                     </a>
                                     
                                     <!-- Edit Button -->
-                                    <a href="#" class="btn btn-warning btn-sm">
+                                    <a href="http://127.0.0.1:5000/students/edit/{{ record.student_id }}" class="btn btn-warning btn-sm">
                                         Edit
                                     </a>
                                     

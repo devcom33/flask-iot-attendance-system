@@ -57,7 +57,16 @@
                   <div class="pt-4 pb-2">
                     <h5 class="card-title text-center pb-0 fs-4">Login to Your Account</h5>
                   </div>
-
+                  {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <div class="alert alert-danger" role="alert">
+                      {% for message in messages %}
+                        {{ message }}
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                {% endwith %}
+                
                   <form class="row g-3 needs-validation" method="POST">
 
                     <div class="col-12">

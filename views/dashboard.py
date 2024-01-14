@@ -142,6 +142,7 @@ def attended_students():
     attendance_records = response.json().get('documents', {})
     tag_ids = [record['tag_id'] for record in attendance_records]
     if tag_ids:
+        
         response_tags = requests.post(
             f"{ATLAS_API_URL}/action/find",
             headers=headers,
@@ -152,9 +153,10 @@ def attended_students():
                 "filter":{"tag_id":{"$in":tag_ids}}
             }
         )
-        if response_tags.status_code == 200 and tag_ids:
+        if response_tags.status_code == 200:
             attendance_names = response_tags.json().get('documents', {})
             attendance_names = [record.get('user_name') for record in attendance_names]
+            print("HOHOHO", tag_ids)
             return attendance_names
     return []
 
