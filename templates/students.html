@@ -4,11 +4,11 @@
 
 {% block content %}
 <div class="pagetitle">
-    <h1>Data Tables</h1>
+    <h1>All Students</h1>
     <nav>
       <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/dashboard">Home</a></li>
-        <li class="breadcrumb-item active">Attendance</li>
+        <li class="breadcrumb-item active">Students</li>
       </ol>
     </nav>
   </div><!-- End Page Title -->
@@ -16,7 +16,7 @@
         <div class="card-body">
     <!-- Display attendance data as a table -->
             <div class="container">
-                <h5  class="card-title">Attendance</h5>
+                <h5  class="card-title">Students</h5>
                 <table class="table">
                     <thead>
                         <tr>
@@ -30,7 +30,7 @@
                     <tbody>
                         {% for record in data %}
                             <tr>
-                                <td>{{ record.tag_data }}</td>
+                                <td>{{ record.tag_id }}</td>
                                 <td>{{ record.user_name }}</td>
                                 <td>{{ record.student_id }}</td>
                                 <td>{{ record.attendance_time }}</td>

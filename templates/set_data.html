@@ -17,14 +17,13 @@
       <div class="card-body">
           <h5 class="card-title">Student Form</h5>
 
-          <!-- Image Upload -->
-          <div class="text-center">
-              <label for="student_image" class="form-label">Student Image:</label>
-              <input type="file" class="form-control" id="student_image" name="student_image" accept="image/*">
-          </div>
-
           <!-- Vertical Form -->
           <form method="POST" action="/set-data" enctype="multipart/form-data">
+                      <!-- Image Upload -->
+                <div class="text-center">
+                    <label for="student_image" class="form-label">Student Image:</label>
+                    <input type="file" class="form-control" id="student_image" name="student_image" accept="image/*">
+                </div>
               <div class="col-12">
                   <label for="student_id" class="form-label">Student ID:</label>
                   <input type="text" class="form-control" id="student_id" name="student_id" required>

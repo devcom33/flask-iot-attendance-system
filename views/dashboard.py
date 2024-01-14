@@ -4,6 +4,10 @@ from flask_login import login_required
 from datetime import datetime
 from reportlab.pdfgen import canvas
 from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -89,8 +93,7 @@ def classify_attends():
     if response.status_code == 200:
         return Convert_to_arr( response.json().get('documents', {}) )
     else:
-        return "Walooooo!!!!"
-
+        return []
 
 
 """convert_date_format - is a function that converts the time format of a datetime to another format"""
@@ -114,8 +117,8 @@ def dashboard():
         count_students = make_api_request(database_name, current_app.config['COLLECTION_NAME'])
         count_present_students = make_api_request(database_name, 'attendance')
         attends_students = attendance(database_name, 'attendance')
-        classify_attends()
         attended_students()
+        print("Show Attended Students: ", attends_students)
         return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students, count_absent=(count_students-count_present_students), attends_students = extractHours(attends_students) ,countByTime=classify_attends())
     
     return redirect(url_for('auth.login'))
@@ -134,23 +137,26 @@ def attended_students():
             "dataSource": "Cluster0",
         }
     )
-    if response.status_code == 200:
-        attendance_records = response.json().get('documents', {})
-        tag_ids = [record['tag_id'] for record in attendance_records]
-    response_tags = requests.post(
-        f"{ATLAS_API_URL}/action/find",
-        headers=headers,
-        json={
-            "database": database_name,
-            "collection": "students",
-            "dataSource": "Cluster0",
-            "filter":{"tag_data":{"$in":tag_ids}}
-        }
-    )
-    if response_tags.status_code == 200 and tag_ids:
-        attendance_names = response_tags.json().get('documents', {})
-        attendance_names = [record.get('user_name') for record in attendance_names]
-        return attendance_names
+    if response.status_code != 200:
+        return []
+    attendance_records = response.json().get('documents', {})
+    tag_ids = [record['tag_id'] for record in attendance_records]
+    if tag_ids:
+        response_tags = requests.post(
+            f"{ATLAS_API_URL}/action/find",
+            headers=headers,
+            json={
+                "database": database_name,
+                "collection": "students",
+                "dataSource": "Cluster0",
+                "filter":{"tag_id":{"$in":tag_ids}}
+            }
+        )
+        if response_tags.status_code == 200 and tag_ids:
+            attendance_names = response_tags.json().get('documents', {})
+            attendance_names = [record.get('user_name') for record in attendance_names]
+            return attendance_names
+    return []
 
 @dashboard_bp.route('/attends/report')
 def report():
@@ -161,21 +167,32 @@ def report():
     response = Response(pdf_bytes, content_type='application/pdf')
     response.headers['Content-Disposition'] = 'inline; filename=exported_list.pdf'
     return response
-def generate_pdf(data_list):
-    # Create a PDF document
+def generate_pdf(data_list, faculty_name="Faculté des Sciences Appliquées Ait Melloul"):
     buffer = BytesIO()
-    pdf = canvas.Canvas(buffer)
+    pdf = SimpleDocTemplate(buffer, pagesize=letter)
 
-    # Set up PDF content
-    pdf.drawString(100, 800, "Attended Students:")
-    
-    y_position = 780
-    for item in data_list:
-        y_position -= 20
-        pdf.drawString(120, y_position, item)
+    styles = getSampleStyleSheet()
+    table_data = [
+        ["Attended Students:"]
+    ]
 
-    pdf.save()
+    # Add attended students in a single column
+    table_data.extend([["- " + item] for item in data_list])
+
+    # Create the table and set style
+    table = Table(table_data, colWidths=300, rowHeights=30)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    # Build the PDF document
+    pdf.build([table])
+
     buffer.seek(0)
-
     return buffer.read()
-

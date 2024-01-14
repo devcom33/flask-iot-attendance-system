@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request,current_app,url_for, session, redirect
 from datetime import datetime
+from werkzeug.utils import secure_filename
 import requests
+import os
 
 set_data_bp = Blueprint('set_data', __name__)
 @set_data_bp.route('/set-data', methods=['GET', 'POST'])
@@ -14,10 +16,14 @@ def set_data():
             # Process the form data and store it in MongoDB Atlas
             student_id = request.form.get('student_id')
             name = request.form.get('name')
-            # Add more fields as needed
+            student_image = request.files['student_image']
+            if student_image and allowed_file(student_image.filename):
+                filename = secure_filename(student_image.filename)
+                image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                student_image.save(image_path)
 
             # Simulate RFID tag data
-            tag_data = "672276220"
+            tag_id = "672276220"
 
             # Get the current date and time
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -28,9 +34,10 @@ def set_data():
                 "database": database_name,
                 "collection": collection_name,
                 "document": {
-                    "tag_data": tag_data,
+                    "tag_id": tag_id,
                     "user_name": name,
                     "student_id": student_id,
+                    "student_image": filename,
                     "attendance_time": current_time,
                 }
             }
@@ -46,7 +53,7 @@ def set_data():
                 inserted_id = insert_response.json().get("insertedId")
                 print("Successfully recorded attendance for user:", name)
                 print("Inserted document ID:", inserted_id)
-                print("RFID Tag Data:", tag_data)
+                print("RFID Tag Data:", tag_id)
 
                 return render_template('set_data.html')
             else:
@@ -55,3 +62,8 @@ def set_data():
         # Render the form page for GET requests
         return render_template('set_data.html')
     return redirect(url_for('auth.login'))
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
