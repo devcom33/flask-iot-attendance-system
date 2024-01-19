@@ -16,23 +16,31 @@
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Scan Your Card</h5>
-      
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
       <div class="text-center mb-4">
         <img src="{{ url_for('static', filename='assets/img/scan.png')}}" class="img-fluid" width="25%" height="25%" alt="RFID Scan Image">
       </div>
       
-      <form method="POST" action="#">
+      <form method="POST" action="/attend">
         <div class="mb-3">
           <label for="tag_data" class="form-label">Student Tag:</label>
-          <input type="text" class="form-control" id="tag_data" name="tag_data" required>
+          <input type="text" class="form-control" id="tag_data" name="tag_data" required placeholder="Enter student tag">
         </div>
 
         <div class="text-center">
           <button type="submit" class="btn btn-primary">Attend</button>
         </div>
       </form>
+    
     </div>
   </div>
 </section>
-
-    {% endblock %}
+{% endblock %}

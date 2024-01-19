@@ -83,7 +83,6 @@ def update_data(student_id):
                     )
 
                     if update_response.status_code == 200:
-                        print("Successfully updated student data for user:", name)
                         return render_template('update_data.html', studentdata=studentdata.get('documents', [])[0])
                     else:
                         return f"Error updating student data: {update_response.status_code}, {update_response.text}"
@@ -116,7 +115,6 @@ def view_student(student_id):
     else:
         return f"Error fetching attendance data. Status code: {response.status_code}, {student_id}"
 
-    return "Hey"
 @students_bp.route('/students/delete/<string:student_id>',methods=['GET'])
 def delete_student(student_id):
     ATLAS_API_URL = current_app.config['ATLAS_API_URL']
