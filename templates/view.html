@@ -63,19 +63,28 @@
                     </div>
                   </div>
                   
-                <div class="tab-pane fade profile-edit pt-3" id="history">
-                    {% for attendance_record in history %}
-                    <li class="list-group-item">
-                      <strong>Time:</strong> {{ attendance_record.attendance_time }}
-                      <br>
-                      <strong>Tag ID:</strong> {{ attendance_record.tag_id }}
-                      <br>
-                      <strong>Student ID:</strong> {{ attendance_record.student_id }}
-                      <!-- You can add more fields based on your actual data model -->
-                    </li>
-                  {% endfor %}
-
-                </div>
+                  <div class="tab-pane fade profile-edit pt-3" id="history">
+                    <h4>Attendance History</h4>
+                  
+                    <ul class="list-group">
+                      {% for history_record in history %}
+                        <li class="list-group-item">
+                          <div class="d-flex justify-content-between">
+                            <div>
+                              <strong>Time:</strong> {{ history_record.attendance_time }}
+                              <br>
+                              <strong>Tag ID:</strong> {{ history_record.tag_id }}
+                              <!-- Add more fields based on your actual data model -->
+                            </div>
+                            <span class="badge {% if history_record.attendance_status == 'Present' %}badge-success{% else %}badge-danger{% endif %}">
+                              {{ history_record.attendance_status }}
+                            </span>
+                          </div>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  
                 </div><!-- End Bordered Tabs -->
   
               </div>

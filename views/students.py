@@ -61,31 +61,32 @@ def update_data(student_id):
                 name = request.form.get('name')
                 student_image = request.files.get('student_image')
                 tag_id = request.form.get('tag_id')
-
+                filename = 'student_avatar.png' 
                 if student_image:
                     filename = secure_filename(student_image.filename)
                     image_path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                     student_image.save(image_path)
 
-                    # Update student image filename in the database
-                    update_payload = {
-                        "dataSource": "Cluster0",
-                        "database": database_name,
-                        "collection": collection_name,
-                        "filter": {"student_id": student_id},
-                        "update": {"$set": {"student_image": filename}}
-                    }
+                # Update student image filename in the database
+                update_payload = {
+                    "dataSource": "Cluster0",
+                    "database": database_name,
+                    "collection": collection_name,
+                    "filter": {"student_id": student_id},
+                    "update": {"$set": {"student_image": filename, "user_name": name, "tag_id":tag_id}}
+                }
 
-                    update_response = requests.post(
-                        f"{ATLAS_API_URL}/action/updateOne",
-                        headers=headers,
-                        json=update_payload
-                    )
+                update_response = requests.post(
+                    f"{ATLAS_API_URL}/action/updateOne",
+                    headers=headers,
+                    json=update_payload
+                )
 
-                    if update_response.status_code == 200:
-                        return render_template('update_data.html', studentdata=studentdata.get('documents', [])[0])
-                    else:
-                        return f"Error updating student data: {update_response.status_code}, {update_response.text}"
+                if update_response.status_code == 200:
+                    return render_template('update_data.html', studentdata=studentdata.get('documents', [])[0])
+                else:
+                    return f"Error updating student data: {update_response.status_code}, {update_response.text}"
+                        
 
             return render_template('update_data.html', studentdata=studentdata.get('documents', [])[0])
         else:
@@ -109,10 +110,11 @@ def view_student(student_id):
             "filter":{"student_id": student_id}
         }
     )
-    print("HEY HEY HEY}}}}",get_student_attendance_history(student_id))
+    
     if response.status_code == 200:
+        history=get_student_attendance_history(student_id)
         student_id = response.json().get('document', {})
-        return render_template('view.html', data=student_id, history=get_student_attendance_history(student_id))
+        return render_template('view.html', data=student_id,history=history)
     else:
         return f"Error fetching attendance data. Status code: {response.status_code}, {student_id}"
 
@@ -140,6 +142,7 @@ def delete_student(student_id):
 
 """Get History"""
 def get_student_attendance_history(student_id):
+
     ATLAS_API_URL = current_app.config['ATLAS_API_URL']
     database_name = current_app.config['DATABASE_NAME']
     headers = current_app.config['HEADERS']
@@ -154,12 +157,12 @@ def get_student_attendance_history(student_id):
             "filter":{"student_id": student_id}
         }
     )
-    tag_id=response.json().get('document', {})
+    tag_id=response.json().get('document',{})
+    
     if tag_id:
         tag_id = tag_id.get('tag_id', None)
-    print("taag id: ", tag_id)
-    response = requests.post(
-        f"{ATLAS_API_URL}/action/findOne",
+    response_ = requests.post(
+        f"{ATLAS_API_URL}/action/find",
         headers=headers,
         json={
             "database": database_name,
@@ -168,11 +171,12 @@ def get_student_attendance_history(student_id):
             "filter":{"tag_id": tag_id}
         }
     )
-    if response.status_code == 200:
-        history = response.json()
+    if response_.status_code == 200:
+        history = response_.json().get('documents', [])
         return history
     else:
-        return f"Error fetching attendance data. Status code: {response.status_code}, {student_id}"
+        return f"Error fetching attendance data. Status code: {response_.status_code}, {student_id}"
+    return history
 @students_bp.route('/students/report')
 def report():
     display_students()
