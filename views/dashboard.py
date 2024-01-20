@@ -1,13 +1,16 @@
 from flask import Blueprint, render_template, session, redirect, url_for, current_app, Response
 import requests
 from flask_login import login_required
-from datetime import datetime
+from datetime import datetime, timedelta
 from reportlab.pdfgen import canvas
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+from bson import json_util
+from calendar import day_name
+from dateutil.relativedelta import relativedelta
 
 dashboard_bp = Blueprint('dashboard', __name__)
 
@@ -34,8 +37,67 @@ def make_api_request(database_name, collection_name):
         return 0
 
 
+def get_bar_chart_data():
+    start_date = datetime.strptime("2022-01-18", "%Y-%m-%d")
+    end_date = datetime.strptime("2022-01-24", "%Y-%m-%d") + relativedelta(days=1)
+    pipeline = [
 
+        {
+            "$project": {
+                "day_of_week": {"$dayOfWeek": {"$dateFromString": {"dateString": "$attendance_time"}}},
+                "tag_id": 1
+            }
+        },
+        {
+            "$group": {
+                "_id": "$day_of_week",
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$sort": {"_id": 1}
+        }
+    ]
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    headers = current_app.config['HEADERS']
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/aggregate",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "pipeline": pipeline
+        }
+    )
+    
+    if response.status_code == 200:
+        documents = response.json().get('documents', [])
+        chart_data = {
+            "labels": [day_name[i] for i in range(7)],
+            "values": [0] * 7
+        }
+
+        for d in documents:
+            day_index = d["_id"] - 2
+            chart_data["values"][day_index] = d["count"]
+        return chart_data
+    else:
+        return []
 def attendance(database_name, collection_name):
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    pipeline = [
+        {
+            "$match": {
+                "attendance_time": {
+                    "$gte": today_start.strftime("%Y-%m-%d %H:%M:%S"),
+                    "$lt": today_end.strftime("%Y-%m-%d %H:%M:%S")
+                }
+            }
+        }
+    ]
     ATLAS_API_URL = current_app.config['ATLAS_API_URL']
     headers = current_app.config['HEADERS']
     response = requests.post(
@@ -45,6 +107,7 @@ def attendance(database_name, collection_name):
             "database": database_name,
             "collection": collection_name,
             "dataSource": "Cluster0",
+            "pipeline": pipeline
         }
     )
 
@@ -60,10 +123,20 @@ def Convert_to_arr(counts_by_time):
     return [record.get('count') for record in counts_by_time]
 
 def classify_attends():
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
     pipeline = [
         {
-            "$project":{
-                "hour":{"$hour": {"$dateFromString": {"dateString": "$attendance_time"}}},
+            "$match": {
+                "attendance_time": {
+                    "$gte": today_start.strftime("%Y-%m-%d %H:%M:%S"),
+                    "$lt": today_end.strftime("%Y-%m-%d %H:%M:%S")
+                }
+            }
+        },
+        {
+            "$project": {
+                "hour": {"$hour": {"$dateFromString": {"dateString": "$attendance_time"}}},
                 "tag_id": 1
             }
         },
@@ -87,7 +160,7 @@ def classify_attends():
             "database": database_name,
             "collection": "attendance",
             "dataSource": "Cluster0",
-            "pipeline":pipeline
+            "pipeline": pipeline
         }
     )
     if response.status_code == 200:
@@ -95,7 +168,45 @@ def classify_attends():
     else:
         return []
 
+def get_presents_today():
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    headers = current_app.config['HEADERS']
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/aggregate",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "pipeline" : [
+                {
+                    "$match": {
+                        "attendance_time": {
+                            "$gte": today_start.strftime("%Y-%m-%d %H:%M:%S"),
+                            "$lt": today_end.strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": None,
+                        "totalCount": {"$sum": 1}
+                    }
+                }
+            ]
+        }
+    )
 
+    if response.status_code == 200:
+        count = response.json()['documents'][0]['totalCount'] if response.json()['documents'] else 0
+        return count
+    else:
+        # Handle the error (you can log it or raise an exception)
+        print(f"Error fetching data for {collection_name}. Status code: {response.status_code}")
+        return 0
 """convert_date_format - is a function that converts the time format of a datetime to another format"""
 def convert_date_format(input_string, input_format='%Y-%m-%d %H:%M:%S', output_format='%Y-%m-%dT%H:00:00.000Z'):
     try:
@@ -115,11 +226,10 @@ def dashboard():
 
         # Make API requests
         count_students = make_api_request(database_name, current_app.config['COLLECTION_NAME'])
-        count_present_students = make_api_request(database_name, 'attendance')
+        count_present_students = get_presents_today()
         attends_students = attendance(database_name, 'attendance')
         attended_students()
-        print("Show Attended Students: ", attends_students)
-        return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students, count_absent=(count_students-count_present_students), attends_students = extractHours(attends_students) ,countByTime=classify_attends())
+        return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students, count_absent=(count_students-count_present_students), attends_students = extractHours(attends_students) ,countByTime=classify_attends(), chartData=get_bar_chart_data())
     
     return redirect(url_for('auth.login'))
 
@@ -128,21 +238,34 @@ def attended_students():
     ATLAS_API_URL = current_app.config['ATLAS_API_URL']
     database_name = current_app.config['DATABASE_NAME']
     headers = current_app.config['HEADERS']
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    pipeline = [
+        {
+            "$match": {
+                "attendance_time": {
+                    "$gte": today_start.strftime("%Y-%m-%d %H:%M:%S"),
+                    "$lt": today_end.strftime("%Y-%m-%d %H:%M:%S")
+                }
+            }
+        }
+    ]
     response = requests.post(
-        f"{ATLAS_API_URL}/action/find",
+        f"{ATLAS_API_URL}/action/aggregate",
         headers=headers,
         json={
             "database": database_name,
             "collection": "attendance",
             "dataSource": "Cluster0",
+            "pipeline": pipeline
         }
     )
     if response.status_code != 200:
         return []
     attendance_records = response.json().get('documents', {})
+    print("Pipppppppppppppppppline: ",response.json())
     tag_ids = [record['tag_id'] for record in attendance_records]
     if tag_ids:
-        
         response_tags = requests.post(
             f"{ATLAS_API_URL}/action/find",
             headers=headers,

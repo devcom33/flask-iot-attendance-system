@@ -21,7 +21,7 @@ def checkTag(tag_id):
                 "filter": {"tag_id": tag_id}
             }
         )
-        response.raise_for_status()  # Raise an exception for 4xx and 5xx status codes
+        response.raise_for_status()  # an exception for 4xx and 5xx status codes
 
         tag_id = response.json().get('document', {})
         if tag_id is None:
@@ -31,12 +31,32 @@ def checkTag(tag_id):
     except requests.RequestException as e:
         flash(f"Error checking tag: {str(e)}", 'danger')
         return None
+def checkExist(tag_id):
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    collection_name = current_app.config['COLLECTION_NAME']
+    headers = current_app.config['HEADERS']
+    
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/findOne",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "filter": {"tag_id": tag_id}
+        }
+    )
+
+    tag_id = response.json().get('document', {})
+    if tag_id is None:
+        return None
+    return tag_id
 
 def recordAttendance(tag_id):
     ATLAS_API_URL = current_app.config['ATLAS_API_URL']
     database_name = current_app.config['DATABASE_NAME']
     headers = current_app.config['HEADERS']
-
     try:
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -73,6 +93,10 @@ def attend():
     if 'username' in session:
         if request.method == 'POST' and request.form.get('tag_data'):
             tag_id = request.form.get('tag_data')
+            print("HELLLLLLLLLLLO",checkExist(tag_id))
+            if checkExist(tag_id) is not None:
+                flash('This student is Already attended', 'danger')
+                return render_template('attend.html')
             student_info = checkTag(tag_id)
 
             if student_info is None:
