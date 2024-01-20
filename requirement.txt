@@ -1,2 +1,0 @@
-pip install flask-bootstrap
-pip install reportlab
