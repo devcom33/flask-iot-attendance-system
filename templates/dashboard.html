@@ -255,11 +255,12 @@
                 <div id="lineChart"></div>
   
                 <script>
+                  var monthData = JSON.parse('{{ monthData | tojson | safe }}');
                   document.addEventListener("DOMContentLoaded", () => {
                     new ApexCharts(document.querySelector("#lineChart"), {
                       series: [{
-                        name: "Desktops",
-                        data: [10, 41, 35, 51, 49, 62, 69, 91, 148]
+                        name: "Students",
+                        data: monthData.values
                       }],
                       chart: {
                         height: 350,
@@ -281,7 +282,7 @@
                         },
                       },
                       xaxis: {
-                        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+                        categories: monthData.labels,
                       }
                     }).render();
                   });
@@ -314,11 +315,21 @@
                     <thead>
                       <tr>
                         <th scope="col">Image</th>
-                        <th scope="col">Name</th>
                         <th scope="col">Tag ID</th>
                         <th scope="col">Student ID</th>
+                        <th scope="col">Name</th>
                       </tr>
                     </thead>
+                    <tbody>
+                      {% for record in top_attended %}
+                        <tr>
+                          <td><img src="{{ url_for('static', filename='assets/uploads/' + record.student_image) }}" class="img-fluid img-thumbnail rounded-circle" alt="Student Image" style="max-width: 50px; max-height: 50px;"></td>
+                          <td>{{ record.tag_id }}</td>
+                          <td>{{ record.student_id }}</td>
+                          <td>{{ record.user_name }}</td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
                   </table>
 
                 </div>

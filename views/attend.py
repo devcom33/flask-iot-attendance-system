@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, current_app, url_for, session, redirect, flash
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 attend_bp = Blueprint('attend', __name__)
@@ -36,7 +36,8 @@ def checkExist(tag_id):
     database_name = current_app.config['DATABASE_NAME']
     collection_name = current_app.config['COLLECTION_NAME']
     headers = current_app.config['HEADERS']
-    
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
     response = requests.post(
         f"{ATLAS_API_URL}/action/findOne",
         headers=headers,
@@ -44,7 +45,13 @@ def checkExist(tag_id):
             "database": database_name,
             "collection": "attendance",
             "dataSource": "Cluster0",
-            "filter": {"tag_id": tag_id}
+            "filter": {
+                "tag_id": tag_id,
+                "attendance_time": {
+                    "$gte": today_start.strftime("%Y-%m-%d %H:%M:%S"),
+                    "$lt": today_end.strftime("%Y-%m-%d %H:%M:%S")
+                }
+            }
         }
     )
 

@@ -9,7 +9,7 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
 from bson import json_util
-from calendar import day_name
+from calendar import day_name,month_name
 from dateutil.relativedelta import relativedelta
 
 dashboard_bp = Blueprint('dashboard', __name__)
@@ -36,10 +36,58 @@ def make_api_request(database_name, collection_name):
         print(f"Error fetching data for {collection_name}. Status code: {response.status_code}")
         return 0
 
+def get_line_chart_data():
+    # start_date = datetime.strptime("2022-01-18", "%Y-%m-%d")
+    # end_date = datetime.strptime("2022-01-24", "%Y-%m-%d") + relativedelta(days=1)
+    pipeline = [
 
+        {
+            "$project": {
+                "month": {"$month": {"$dateFromString": {"dateString": "$attendance_time"}}},
+                "tag_id": 1
+            }
+        },
+        {
+            "$group": {
+                "_id": "$month",
+                "count": {"$sum": 1}
+            }
+        },
+        {
+            "$sort": {"_id": 1}
+        }
+    ]
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    headers = current_app.config['HEADERS']
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/aggregate",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "pipeline": pipeline
+        }
+    )
+    
+    if response.status_code == 200:
+        documents = response.json().get('documents', [])
+        print("mooooonth***************  ",documents)
+        chart_data = {
+            "labels": [month_name[i][:3] for i in range(12)],
+            "values": [0] * 12
+        }
+
+        for d in documents:
+            month_index = d["_id"]
+            chart_data["values"][month_index] = d["count"]
+        return chart_data
+    else:
+        return []
 def get_bar_chart_data():
-    start_date = datetime.strptime("2022-01-18", "%Y-%m-%d")
-    end_date = datetime.strptime("2022-01-24", "%Y-%m-%d") + relativedelta(days=1)
+    # start_date = datetime.strptime("2022-01-18", "%Y-%m-%d")
+    # end_date = datetime.strptime("2022-01-24", "%Y-%m-%d") + relativedelta(days=1)
     pipeline = [
 
         {
@@ -85,6 +133,60 @@ def get_bar_chart_data():
         return chart_data
     else:
         return []
+def get_top_attended():
+    #all tag_id in attendance
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    headers = current_app.config['HEADERS']
+    today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+    pipeline = [
+        {
+            "$match": {
+                "attendance_time": {
+                    "$gte": today_start.strftime("%Y-%m-%d %H:%M:%S"),
+                    "$lt": today_end.strftime("%Y-%m-%d %H:%M:%S")
+                }
+            }
+        },
+        {
+            "$sort": {"attendance_time": 1}  # Sort by attendance_time in ascending order
+        },
+        {
+            "$limit": 5  # Limit to the top 5 records
+        }
+    ]
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/aggregate",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "pipeline": pipeline
+        }
+    )
+    if response.status_code != 200:
+        return []
+    attendance_records = response.json().get('documents', {})
+
+    tag_ids = [record['tag_id'] for record in attendance_records]
+    if tag_ids:
+        response_tags = requests.post(
+            f"{ATLAS_API_URL}/action/find",
+            headers=headers,
+            json={
+                "database": database_name,
+                "collection": "students",
+                "dataSource": "Cluster0",
+                "filter":{"tag_id":{"$in":tag_ids}}
+            }
+        )
+        if response_tags.status_code == 200:
+            top_attendance_names = response_tags.json().get('documents', {})
+            # top_attendance_names = [record.get('user_name') for record in top_attendance_names]
+            return top_attendance_names
+    return []
 def attendance(database_name, collection_name):
     today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     today_end = today_start + timedelta(days=1)
@@ -229,7 +331,10 @@ def dashboard():
         count_present_students = get_presents_today()
         attends_students = attendance(database_name, 'attendance')
         attended_students()
-        return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students, count_absent=(count_students-count_present_students), attends_students = extractHours(attends_students) ,countByTime=classify_attends(), chartData=get_bar_chart_data())
+        month_data = get_line_chart_data()
+        top_attended = get_top_attended()
+        print("TOOOOOOOOOOOOOOOOOP: ",top_attended)
+        return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students, count_absent=(count_students-count_present_students), attends_students = extractHours(attends_students) ,countByTime=classify_attends(), chartData=get_bar_chart_data(), monthData=month_data, top_attended=top_attended)
     
     return redirect(url_for('auth.login'))
 
@@ -263,7 +368,7 @@ def attended_students():
     if response.status_code != 200:
         return []
     attendance_records = response.json().get('documents', {})
-    print("Pipppppppppppppppppline: ",response.json())
+
     tag_ids = [record['tag_id'] for record in attendance_records]
     if tag_ids:
         response_tags = requests.post(
@@ -279,7 +384,6 @@ def attended_students():
         if response_tags.status_code == 200:
             attendance_names = response_tags.json().get('documents', {})
             attendance_names = [record.get('user_name') for record in attendance_names]
-            print("HOHOHO", tag_ids)
             return attendance_names
     return []
 
