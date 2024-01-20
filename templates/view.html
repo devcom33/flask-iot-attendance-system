@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Add Student{% endblock %}
+{% block title %}View Student{% endblock %}
 
 {% block content %}
     <div class="pagetitle">
@@ -37,7 +37,10 @@
   
                   <li class="nav-item">
                     <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#profile-overview">Overview</button>
-                  </li>  
+                  </li>
+                  <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#history">History</button>
+                  </li>
                 </ul>
                 <div class="tab-content pt-2">
   
@@ -59,6 +62,20 @@
                       <div class="col-lg-9 col-md-8">{{data.tag_id}}</div>
                     </div>
                   </div>
+                  
+                <div class="tab-pane fade profile-edit pt-3" id="history">
+                    {% for attendance_record in history %}
+                    <li class="list-group-item">
+                      <strong>Time:</strong> {{ attendance_record.attendance_time }}
+                      <br>
+                      <strong>Tag ID:</strong> {{ attendance_record.tag_id }}
+                      <br>
+                      <strong>Student ID:</strong> {{ attendance_record.student_id }}
+                      <!-- You can add more fields based on your actual data model -->
+                    </li>
+                  {% endfor %}
+
+                </div>
                 </div><!-- End Bordered Tabs -->
   
               </div>

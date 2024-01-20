@@ -310,7 +310,7 @@ def get_presents_today():
         print(f"Error fetching data for {collection_name}. Status code: {response.status_code}")
         return 0
 """convert_date_format - is a function that converts the time format of a datetime to another format"""
-def convert_date_format(input_string, input_format='%Y-%m-%d %H:%M:%S', output_format='%Y-%m-%dT%H:00:00.000Z'):
+def convert_date_format(input_string, input_format='%Y-%m-%d %H:%M:%S', output_format='%Y-%m-%dT%H:%M:00.000Z'):
     try:
         dt_object = datetime.strptime(input_string, input_format)
         formatted_string = dt_object.strftime(output_format)
@@ -330,7 +330,8 @@ def dashboard():
         count_students = make_api_request(database_name, current_app.config['COLLECTION_NAME'])
         count_present_students = get_presents_today()
         attends_students = attendance(database_name, 'attendance')
-        attended_students()
+        print("Ohoyaaaaaaaaaaaaaaaaaaaaaaa", extractHours(attends_students))
+        
         month_data = get_line_chart_data()
         top_attended = get_top_attended()
         print("TOOOOOOOOOOOOOOOOOP: ",top_attended)

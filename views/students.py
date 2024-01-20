@@ -109,9 +109,10 @@ def view_student(student_id):
             "filter":{"student_id": student_id}
         }
     )
+    print("HEY HEY HEY}}}}",get_student_attendance_history(student_id))
     if response.status_code == 200:
         student_id = response.json().get('document', {})
-        return render_template('view.html', data=student_id)
+        return render_template('view.html', data=student_id, history=get_student_attendance_history(student_id))
     else:
         return f"Error fetching attendance data. Status code: {response.status_code}, {student_id}"
 
@@ -137,6 +138,41 @@ def delete_student(student_id):
     else:
         return f"Error Not Deleted. Status code: {response.status_code}, {student_id}"
 
+"""Get History"""
+def get_student_attendance_history(student_id):
+    ATLAS_API_URL = current_app.config['ATLAS_API_URL']
+    database_name = current_app.config['DATABASE_NAME']
+    headers = current_app.config['HEADERS']
+    #this response is for getting tag_id
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/findOne",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "students",
+            "dataSource": "Cluster0",
+            "filter":{"student_id": student_id}
+        }
+    )
+    tag_id=response.json().get('document', {})
+    if tag_id:
+        tag_id = tag_id.get('tag_id', None)
+    print("taag id: ", tag_id)
+    response = requests.post(
+        f"{ATLAS_API_URL}/action/findOne",
+        headers=headers,
+        json={
+            "database": database_name,
+            "collection": "attendance",
+            "dataSource": "Cluster0",
+            "filter":{"tag_id": tag_id}
+        }
+    )
+    if response.status_code == 200:
+        history = response.json()
+        return history
+    else:
+        return f"Error fetching attendance data. Status code: {response.status_code}, {student_id}"
 @students_bp.route('/students/report')
 def report():
     display_students()
