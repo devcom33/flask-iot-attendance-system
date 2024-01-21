@@ -153,7 +153,8 @@
                   <script>
                     var dateStrings = JSON.parse('{{ attends_students | tojson | safe }}');
                     var countByTime = JSON.parse('{{ countByTime | tojson | safe  }}');
-                    console.log("Hey every dateStrings: ", dateStrings)
+                    console.log("dateStrings:", dateStrings);
+                    console.log("countByTime:", countByTime);
                     document.addEventListener("DOMContentLoaded", () => {
                       new ApexCharts(document.querySelector("#reportsChart"), {
                         series: [{
@@ -177,7 +178,7 @@
                             shadeIntensity: 1,
                             opacityFrom: 0.3,
                             opacityTo: 0.4,
-                            stops: [0, 90, 100]
+                            stops: [0, 90, 10]
                           }
                         },
                         dataLabels: {

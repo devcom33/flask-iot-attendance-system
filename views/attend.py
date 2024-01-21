@@ -100,7 +100,6 @@ def attend():
     if 'username' in session:
         if request.method == 'POST' and request.form.get('tag_data'):
             tag_id = request.form.get('tag_data')
-            print("HELLLLLLLLLLLO",checkExist(tag_id))
             if checkExist(tag_id) is not None:
                 flash('This student is Already attended', 'danger')
                 return render_template('attend.html')

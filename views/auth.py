@@ -33,7 +33,6 @@ def login():
 
         if response.status_code == 200:
             user = response.json().get('document',{})
-            print(user)
             if user and check_password_hash(user['password'], password):
                 session['username'] = username
                 return redirect(url_for('dashboard.dashboard'))

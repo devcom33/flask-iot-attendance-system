@@ -73,7 +73,6 @@ def get_line_chart_data():
     
     if response.status_code == 200:
         documents = response.json().get('documents', [])
-        print("mooooonth***************  ",documents)
         chart_data = {
             "labels": [month_name[i][:3] for i in range(12)],
             "values": [0] * 12
@@ -239,19 +238,21 @@ def classify_attends():
         {
             "$project": {
                 "hour": {"$hour": {"$dateFromString": {"dateString": "$attendance_time"}}},
+                "minute": {"$minute": {"$dateFromString": {"dateString": "$attendance_time"}}},
                 "tag_id": 1
             }
         },
         {
             "$group": {
-                "_id": "$hour",
+                "_id": {"hour": "$hour", "minute": "$minute"},
                 "count": {"$sum": 1}
             }
         },
         {
-            "$sort": {"_id": 1}
+            "$sort": {"_id.hour": 1, "_id.minute": 1}
         }
     ]
+    
     ATLAS_API_URL = current_app.config['ATLAS_API_URL']
     database_name = current_app.config['DATABASE_NAME']
     headers = current_app.config['HEADERS']
@@ -265,8 +266,9 @@ def classify_attends():
             "pipeline": pipeline
         }
     )
+    
     if response.status_code == 200:
-        return Convert_to_arr( response.json().get('documents', {}) )
+        return Convert_to_arr(response.json().get('documents', {}))
     else:
         return []
 
@@ -319,7 +321,9 @@ def convert_date_format(input_string, input_format='%Y-%m-%d %H:%M:%S', output_f
         return None
 
 def extractHours(attends_students):
-    return [convert_date_format(record.get('attendance_time')) for record in attends_students]
+    timestamps = [record.get('attendance_time') for record in attends_students]
+    unique_timestamps = sorted(set([convert_date_format(timestamp) for timestamp in timestamps if timestamp]))
+    return unique_timestamps
 
 @dashboard_bp.route('/dashboard')
 def dashboard():
@@ -330,11 +334,10 @@ def dashboard():
         count_students = make_api_request(database_name, current_app.config['COLLECTION_NAME'])
         count_present_students = get_presents_today()
         attends_students = attendance(database_name, 'attendance')
-        print("Ohoyaaaaaaaaaaaaaaaaaaaaaaa", extractHours(attends_students))
         
         month_data = get_line_chart_data()
         top_attended = get_top_attended()
-        print("TOOOOOOOOOOOOOOOOOP: ",top_attended)
+        print("extract hours: ", extractHours(attends_students))
         return render_template('dashboard.html', count_students=count_students, count_presents=count_present_students, count_absent=(count_students-count_present_students), attends_students = extractHours(attends_students) ,countByTime=classify_attends(), chartData=get_bar_chart_data(), monthData=month_data, top_attended=top_attended)
     
     return redirect(url_for('auth.login'))
