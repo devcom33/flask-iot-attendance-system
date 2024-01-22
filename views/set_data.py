@@ -16,6 +16,7 @@ def set_data():
             # Process the form data and store it in MongoDB Atlas
             student_id = request.form.get('student_id')
             name = request.form.get('name')
+            gender = request.form.get('gender')
             student_image = request.files['student_image']
             # Simulate RFID tag data
             tag_id = request.form.get('tag_id')
@@ -41,7 +42,8 @@ def set_data():
                     "user_name": name,
                     "student_id": student_id,
                     "student_image": filename,
-                    "attendance_time": current_time,
+                    "gender": gender,
+                    "registered_time": current_time,
                 }
             }
 

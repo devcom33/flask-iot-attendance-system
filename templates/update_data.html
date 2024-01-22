@@ -41,6 +41,13 @@
                     <label for="name" class="form-label">Name:</label>
                     <input type="text" class="form-control" id="name" name="name" value="{{ studentdata.user_name }}" required>
                 </div>
+                <div class="col-12">
+                    <label for="gender" class="form-label">Gender:</label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="male" {% if studentdata.gender == 'male' %}selected{% endif %}>Male</option>
+                        <option value="female" {% if studentdata.gender == 'female' %}selected{% endif %}>Female</option>
+                    </select>
+                </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Update</button>
                     <a href="/dashboard" class="btn btn-secondary">Cancel</a>

@@ -59,6 +59,7 @@ def update_data(student_id):
             if request.method == 'POST':
                 # Process the form data and update it in MongoDB Atlas
                 name = request.form.get('name')
+                gender = request.form.get('gender')
                 student_image = request.files.get('student_image')
                 tag_id = request.form.get('tag_id')
                 filename = 'student_avatar.png' 
@@ -73,7 +74,7 @@ def update_data(student_id):
                     "database": database_name,
                     "collection": collection_name,
                     "filter": {"student_id": student_id},
-                    "update": {"$set": {"student_image": filename, "user_name": name, "tag_id":tag_id}}
+                    "update": {"$set": {"student_image": filename, "user_name": name, "gender": gender, "tag_id":tag_id}}
                 }
 
                 update_response = requests.post(

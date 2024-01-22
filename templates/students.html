@@ -32,7 +32,7 @@
                             <th>TAG ID</th>
                             <th>Name</th>
                             <th>Student ID</th>
-                            <th>Timestamp</th>
+                            <th>registred time</th>
                             <th>Actions</th> <!-- Add a new column for actions -->
                         </tr>
                     </thead>
@@ -42,7 +42,7 @@
                                 <td>{{ record.tag_id }}</td>
                                 <td>{{ record.user_name }}</td>
                                 <td>{{ record.student_id }}</td>
-                                <td>{{ record.attendance_time }}</td>
+                                <td>{{ record.registered_time }}</td>
                                 <td>
                                     <!-- View Button -->
                                     <a href="http://127.0.0.1:5000/students/view/{{ record.student_id }}" class="btn btn-info btn-sm">
